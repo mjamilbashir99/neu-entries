@@ -14,7 +14,7 @@ export default withAuth(
       )
     ) {
       if (isAuthenticated) {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(new URL("/journal", req.url));
       }
       return null;
     }

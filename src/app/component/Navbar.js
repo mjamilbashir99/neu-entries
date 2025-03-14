@@ -28,7 +28,7 @@ const Navbar = () => {
           <p className="text-xl text-center group-hover:translate-y-[-100%] group-hover:duration-300 duration-300">
             Get Started
           </p>
-          <Link href="/getstarted">
+          <Link href="/login">
             <p className="text-lg text-center text-gray-300  translate-y-[100%] group-hover:translate-y-[-100%] group-hover:duration-300 duration-300 group-hover:block">
               Get Started
             </p>

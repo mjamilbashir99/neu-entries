@@ -45,7 +45,7 @@ const Banner = ({ img, title1, title2, title3, title4 }) => {
       </div>
 
       <div className="flex justify-center">
-        <Link href="/getstarted">
+        <Link href="/login">
           <ToggleStartBtn />
         </Link>
       </div>
