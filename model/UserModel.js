@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const EntrySchema = new Schema(
+const UserSchema = new Schema(
   {
     email: {
       type: String,
@@ -16,8 +16,6 @@ const EntrySchema = new Schema(
   { timestamps: true }
 );
 
-// Check if model already exists in mongoose.models, and create or reuse the model
-const Entries =
-  mongoose.models.Entries || mongoose.model("Entries", EntrySchema);
+const User = mongoose.models.Entries || mongoose.model("User", UserSchema);
 
-export default Entries;
+export default User;

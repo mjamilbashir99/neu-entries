@@ -1,13 +1,17 @@
+"use client";
 import Link from "next/link";
 import React from "react";
 
 const Navbar = () => {
+  // const session = useSession(); // Destructure session and status
+
   return (
     <div className="w-[90%] flex justify-between mx-auto text-white py-5 relative z-20">
       {/* left */}
       <div>
         <p className="text-xl">Entries</p>
       </div>
+
       {/* right */}
       <div className="flex gap-7">
         <div className="overflow-hidden group h-7">

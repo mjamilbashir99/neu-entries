@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 import { FcGoogle } from "react-icons/fc";
+import { signIn } from "next-auth/react";
 
 const page = () => {
   const formik = useFormik({
@@ -16,7 +17,14 @@ const page = () => {
       alert(JSON.stringify(values, null, 2));
     },
   });
-
+  // const handleSignIn = async () => {
+  //   try {
+  //     // Trigger sign-in with Email provider (magic link)
+  //     await signIn("google"); // "email" refers to the EmailProvider set in NextAuth
+  //   } catch (error) {
+  //     console.error("Error signing in:", error);
+  //   }
+  // };
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg ">
       <h2 className="text-3xl font-semibold text-center py-2 text-gray-900">
@@ -32,7 +40,7 @@ const page = () => {
           <button
             type="button"
             className="flex items-center gap-2 justify-center w-full py-4 px-4  text-black font-semibold rounded-lg focus:outline-none hover:bg-gray-100"
-            onClick={() => alert("Google login clicked")}
+            onClick={() => signIn("google")}
           >
             <FcGoogle />
             Continue with Google
