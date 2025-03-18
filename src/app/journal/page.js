@@ -6,6 +6,7 @@ import { CiFilter } from "react-icons/ci";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { MdChevronRight } from "react-icons/md";
+import Link from "next/link";
 
 export default function Home() {
   const [currentDate, setCurrentDate] = useState("");
@@ -77,6 +78,7 @@ export default function Home() {
           {showProfile && (
             <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
+                <Link href="/profile">
                 <div className="cursor-pointer">
                   <p className="text-gray-700 font-normal text-[16px]">
                     {session?.user?.name}
@@ -85,6 +87,7 @@ export default function Home() {
                     {session?.user?.email}
                   </p>
                 </div>
+                </Link>
                 <MdChevronRight size={25} className="text-gray-500" />
               </div>
               <p className="text-blue-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
@@ -99,12 +102,12 @@ export default function Home() {
               >
                 Sign Out
               </p>
-              <p
+              {/* <p
                 className="text-red-600 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer"
                 onClick={handleDeleteAccount}
               >
                 Delete Account
-              </p>
+              </p> */}
             </div>
           )}
         </div>
