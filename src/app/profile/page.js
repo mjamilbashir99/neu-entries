@@ -108,12 +108,12 @@ const Profile = () => {
           <p className="text-gray-500 text-xs italic">
             For security purposes, you may be asked to sign in again with Google or email before deletion.
           </p>
-          <p
-                className="text-red-600 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer"
+          <a
+                className="text-red-600 font-normal text-[17px] hover:bg-gray-100 cursor-pointer"
                 onClick={handleDeleteAccount}
               >
                 Delete Account
-              </p>
+              </a>
         </div>
       </div>
     </div>
