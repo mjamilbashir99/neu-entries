@@ -17,14 +17,7 @@ const page = () => {
       alert(JSON.stringify(values, null, 2));
     },
   });
-  // const handleSignIn = async () => {
-  //   try {
-  //     // Trigger sign-in with Email provider (magic link)
-  //     await signIn("google"); // "email" refers to the EmailProvider set in NextAuth
-  //   } catch (error) {
-  //     console.error("Error signing in:", error);
-  //   }
-  // };
+
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg ">
       <h2 className="text-3xl font-semibold text-center py-2 text-gray-900">
@@ -75,6 +68,7 @@ const page = () => {
         {/* Submit Button */}
         <div>
           <button
+            onClick={() => signIn("email", { email: formik.values.email })}
             type="submit"
             className="w-full py-2 px-4 bg-black text-white font-normal rounded-lg focus:outline-none hover:bg-gray-900"
           >

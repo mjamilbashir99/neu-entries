@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { PiPlus } from "react-icons/pi";
 import { IoSearchOutline } from "react-icons/io5";
 import { CiFilter } from "react-icons/ci";
-import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { MdChevronRight } from "react-icons/md";
@@ -116,3 +115,22 @@ export default function Home() {
     </div>
   );
 }
+// "use client";
+// import { signOut, useSession } from "next-auth/react";
+
+// const Dashboard = () => {
+//   const { data: session } = useSession();
+
+//   return (
+//     <div>
+//       <h1>Welcome, {session?.user?.name}</h1>
+//       <p>Email: {session?.user?.email}</p>
+//       <p>Google Access Token: {session?.user?.accessToken}</p>
+//       <button onClick={() => signOut({ callbackUrl: "/login" })}>
+//         Sign Out
+//       </button>
+//     </div>
+//   );
+// };
+
+// export default Dashboard;
