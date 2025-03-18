@@ -11,7 +11,7 @@ export default function Home() {
   const [currentDate, setCurrentDate] = useState("");
   const [entries, setEntries] = useState([]);
   const [showProfile, setShowProfile] = useState(false);
-  const { data: session } = useSession(); // Use session safely
+  const { data: session } = useSession();
 
   useEffect(() => {
     const today = new Date();
@@ -28,6 +28,29 @@ export default function Home() {
       ...prevEntries,
       { date: currentDate, text: "Empty entry..." },
     ]);
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmDelete = confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (confirmDelete) {
+      try {
+        const response = await fetch("/api/delete-account", {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          alert("Your account has been deleted.");
+          signOut({ callbackUrl: "/login" }); // Sign out after account deletion
+        } else {
+          alert("Failed to delete account. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting account:", error);
+        alert("An error occurred. Please try again later.");
+      }
+    }
   };
 
   return (
@@ -76,12 +99,17 @@ export default function Home() {
               >
                 Sign Out
               </p>
+              <p
+                className="text-red-600 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer"
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Fixed: Moved button outside of Link */}
       <div className="text-center w-[55%] mx-auto">
         <button
           onClick={handleNewEntry}
@@ -115,22 +143,3 @@ export default function Home() {
     </div>
   );
 }
-// "use client";
-// import { signOut, useSession } from "next-auth/react";
-
-// const Dashboard = () => {
-//   const { data: session } = useSession();
-
-//   return (
-//     <div>
-//       <h1>Welcome, {session?.user?.name}</h1>
-//       <p>Email: {session?.user?.email}</p>
-//       <p>Google Access Token: {session?.user?.accessToken}</p>
-//       <button onClick={() => signOut({ callbackUrl: "/login" })}>
-//         Sign Out
-//       </button>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
