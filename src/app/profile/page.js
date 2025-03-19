@@ -58,7 +58,7 @@ const Profile = () => {
           <p className="text-gray-600 text-sm">
             Manage your subscription or upgrade to premium.
           </p>
-          <a href="#" className="text-blue-600 hover:underline mt-2 inline-block">
+          <a href="/subscription-screen" className="text-blue-600 hover:underline mt-2 inline-block">
             Upgrade to premium
           </a>
         </div>

@@ -1,22 +1,27 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const EntrySchema = new Schema(
+const EntrySchema = new mongoose.Schema(
   {
-    prompt: {
+    entry_name: {
       type: String,
-      timestamp: Date,
+      required: true,
+      default: "Empty Entry...",
     },
-    image: {
+    random_string: {
       type: String,
+      required: true,
     },
-    voiceChat: {
-      type: String,
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId, // Reference to user
+      required: true,
+      ref: "User",
+    },
+    date: {
+      type: Date,
+      default: Date.now,
     },
   },
   { timestamps: true }
 );
 
-// Create a model for the schema
-const Entry = mongoose.models.Entry || mongoose.model("Entry", EntrySchema);
-
-export default Entry;
+export default mongoose.models.Entry || mongoose.model("Entry", EntrySchema);

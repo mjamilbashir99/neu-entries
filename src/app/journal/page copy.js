@@ -7,10 +7,8 @@ import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { MdChevronRight } from "react-icons/md";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const router = useRouter();
   const [currentDate, setCurrentDate] = useState("");
   const [entries, setEntries] = useState([]);
   const [showProfile, setShowProfile] = useState(false);
@@ -26,54 +24,11 @@ export default function Home() {
     setCurrentDate(formattedDate);
   }, []);
 
-  // const handleNewEntry = async () => {
-  //   const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID from auth system
-  
-  //   try {
-  //     const response = await fetch("/api/entries", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ user_id: userId }),
-  //     });
-  
-  //     if (response.ok) {
-  //       const newEntry = await response.json();
-  //       setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
-  //     } else {
-  //       console.error("Failed to create entry");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error creating entry:", error);
-  //   }
-  // };
-
-  const handleNewEntry = async () => {
-    
-    const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID
-  
-    try {
-      const response = await fetch("/api/entries", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
-  
-      if (response.ok) {
-        const newEntry = await response.json();
-        setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
-  
-        // Redirect to new entry page
-        router.push(`/entry/${newEntry.random_string}`);
-      } else {
-        console.error("Failed to create entry");
-      }
-    } catch (error) {
-      console.error("Error creating entry:", error);
-    }
+  const handleNewEntry = () => {
+    setEntries((prevEntries) => [
+      ...prevEntries,
+      { date: currentDate, text: "Empty entry..." },
+    ]);
   };
 
   const handleDeleteAccount = async () => {
