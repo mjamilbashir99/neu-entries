@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
+  // dangerouslyAllowBrowser: true,
 });
 
 const EntryPage = () => {
@@ -16,7 +16,7 @@ const EntryPage = () => {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const user_id = session?.user?.id;
-  
+
   console.log("User ID:", user_id);
   console.log("Chat ID from URL:", chat_id);
 
@@ -28,7 +28,12 @@ const EntryPage = () => {
         const res = await fetch(`/api/chats?chat_id=${chat_id}`);
         const data = await res.json();
         if (res.ok) {
-          setChat(data.map((msg) => ({ role: msg.type === "sent" ? "user" : "assistant", content: msg.message })));
+          setChat(
+            data.map((msg) => ({
+              role: msg.type === "sent" ? "user" : "assistant",
+              content: msg.message,
+            }))
+          );
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -57,13 +62,21 @@ const EntryPage = () => {
         messages: [...chat, userMessage],
       });
 
-      const aiResponse = { role: "assistant", content: res.choices[0]?.message?.content || "No response from AI" };
+      const aiResponse = {
+        role: "assistant",
+        content: res.choices[0]?.message?.content || "No response from AI",
+      };
 
       // Save GPT response
       await fetch("/api/chats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id, chat_id, message: aiResponse.content, type: "response" }),
+        body: JSON.stringify({
+          user_id,
+          chat_id,
+          message: aiResponse.content,
+          type: "response",
+        }),
       });
 
       // Update UI state
@@ -77,12 +90,23 @@ const EntryPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800 px-4">
       {/* Date */}
-      <p className="text-gray-500 mb-4">{new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
+      <p className="text-gray-500 mb-4">
+        {new Date().toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </p>
 
       {/* Chat Messages */}
       <div className="w-full max-w-2xl p-4 rounded-lg overflow-y-auto max-h-96">
         {chat.map((msg, index) => (
-          <div key={index} className={`mb-4 ${msg.role === "user" ? "text-left" : "text-blue-600 text-left"}`}>
+          <div
+            key={index}
+            className={`mb-4 ${
+              msg.role === "user" ? "text-left" : "text-blue-600 text-left"
+            }`}
+          >
             <p className="text-lg">{msg.content}</p>
           </div>
         ))}
