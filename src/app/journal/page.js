@@ -15,6 +15,7 @@ export default function Home() {
   const [entries, setEntries] = useState([]);
   const [showProfile, setShowProfile] = useState(false);
   const { data: session } = useSession();
+  const [getEntries,setgetEntries]= useState("");
 
   useEffect(() => {
     const today = new Date();
@@ -25,6 +26,26 @@ export default function Home() {
     }).format(today);
     setCurrentDate(formattedDate);
   }, []);
+
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/getUserEntries");
+        const data = await response.json();
+
+        // ✅ Ensure users is an array
+        setgetEntries(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  console.log("Users Array:", getEntries);
 
   // const handleNewEntry = async () => {
   //   const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID from auth system
@@ -51,7 +72,8 @@ export default function Home() {
 
   const handleNewEntry = async () => {
     
-    const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID
+    const userId = session.user.id;
+    console.log("sufi implementation awesomne developer",userId);
   
     try {
       const response = await fetch("/api/entries", {
@@ -67,7 +89,7 @@ export default function Home() {
         setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
   
         // Redirect to new entry page
-        router.push(`/entry/${newEntry.random_string}`);
+        router.push(`/entry/${newEntry._id}`);
       } else {
         console.error("Failed to create entry");
       }
@@ -172,21 +194,25 @@ export default function Home() {
           <CiFilter size={25} />
         </div>
 
-        {entries.length > 0 ? (
-          entries.map((entry, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
-            >
-              <p className="text-gray-700 text-left">{entry.text}</p>
-              <p className="text-gray-400 text-sm text-left mt-2">
-                {entry.date}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500 mt-6">No entries found.</p>
-        )}
+        {session?.user?.id &&
+            getEntries?.chats
+              ?.filter((chat) => chat.user_id === session.user.id)
+              .map((entry, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
+                >
+                  <p className="text-gray-700 text-left">{entry.entry_name}</p>
+                  <p className="text-gray-400 text-sm text-left mt-2">
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+
+          {getEntries?.chats?.length === 0 && (
+            <p className="text-gray-500 mt-6">No entries found.</p>
+          )}
+
       </div>
     </div>
   );
