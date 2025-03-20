@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  // dangerouslyAllowBrowser: true,
+  dangerouslyAllowBrowser: true,
 });
 
 const EntryPage = () => {
