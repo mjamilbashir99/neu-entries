@@ -15,7 +15,7 @@ export default function Home() {
   const [entries, setEntries] = useState([]);
   const [showProfile, setShowProfile] = useState(false);
   const { data: session } = useSession();
-  const [getEntries,setgetEntries]= useState("");
+  const [getEntries, setgetEntries] = useState("");
 
   useEffect(() => {
     const today = new Date();
@@ -27,12 +27,10 @@ export default function Home() {
     setCurrentDate(formattedDate);
   }, []);
 
-
-
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/getUserEntries");
+        const response = await fetch("/api/getUserEntries");
         const data = await response.json();
 
         // ✅ Ensure users is an array
@@ -49,7 +47,7 @@ export default function Home() {
 
   // const handleNewEntry = async () => {
   //   const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID from auth system
-  
+
   //   try {
   //     const response = await fetch("/api/entries", {
   //       method: "POST",
@@ -58,7 +56,7 @@ export default function Home() {
   //       },
   //       body: JSON.stringify({ user_id: userId }),
   //     });
-  
+
   //     if (response.ok) {
   //       const newEntry = await response.json();
   //       setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
@@ -71,10 +69,9 @@ export default function Home() {
   // };
 
   const handleNewEntry = async () => {
-    
     const userId = session.user.id;
-    console.log("sufi implementation awesomne developer",userId);
-  
+    console.log("sufi implementation awesomne developer", userId);
+
     try {
       const response = await fetch("/api/entries", {
         method: "POST",
@@ -83,11 +80,11 @@ export default function Home() {
         },
         body: JSON.stringify({ user_id: userId }),
       });
-  
+
       if (response.ok) {
         const newEntry = await response.json();
         setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
-  
+
         // Redirect to new entry page
         router.push(`/entry/${newEntry._id}`);
       } else {
@@ -146,14 +143,14 @@ export default function Home() {
             <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
                 <Link href="/profile">
-                <div className="cursor-pointer">
-                  <p className="text-gray-700 font-normal text-[16px]">
-                    {session?.user?.name}
-                  </p>
-                  <p className="text-gray-700 font-normal text-[16px] mt-1">
-                    {session?.user?.email}
-                  </p>
-                </div>
+                  <div className="cursor-pointer">
+                    <p className="text-gray-700 font-normal text-[16px]">
+                      {session?.user?.name}
+                    </p>
+                    <p className="text-gray-700 font-normal text-[16px] mt-1">
+                      {session?.user?.email}
+                    </p>
+                  </div>
                 </Link>
                 <MdChevronRight size={25} className="text-gray-500" />
               </div>
@@ -195,24 +192,23 @@ export default function Home() {
         </div>
 
         {session?.user?.id &&
-            getEntries?.chats
-              ?.filter((chat) => chat.user_id === session.user.id)
-              .map((entry, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
-                >
-                  <p className="text-gray-700 text-left">{entry.entry_name}</p>
-                  <p className="text-gray-400 text-sm text-left mt-2">
-                    {new Date(entry.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+          getEntries?.chats
+            ?.filter((chat) => chat.user_id === session.user.id)
+            .map((entry, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
+              >
+                <p className="text-gray-700 text-left">{entry.entry_name}</p>
+                <p className="text-gray-400 text-sm text-left mt-2">
+                  {new Date(entry.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
 
-          {getEntries?.chats?.length === 0 && (
-            <p className="text-gray-500 mt-6">No entries found.</p>
-          )}
-
+        {getEntries?.chats?.length === 0 && (
+          <p className="text-gray-500 mt-6">No entries found.</p>
+        )}
       </div>
     </div>
   );

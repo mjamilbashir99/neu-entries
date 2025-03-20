@@ -8,7 +8,7 @@ export default function AllUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users");
+        const response = await fetch("/api/users");
         const data = await response.json();
 
         // ✅ Ensure users is an array

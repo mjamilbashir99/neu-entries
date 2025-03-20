@@ -22,7 +22,7 @@ export default function LoginForm() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/adminLogin", {
+      const response = await fetch("/api/adminLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
