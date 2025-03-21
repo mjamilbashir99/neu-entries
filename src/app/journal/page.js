@@ -259,32 +259,34 @@ export default function Home() {
             )}
           </div>
         </div>
-        {getEntries?.chats
-          ?.filter((chat) => chat.user_id === session?.user.id) // Filter by user_id
-          .filter(
-            (entry) =>
-              entry.entry_name
-                ?.toLowerCase()
-                .includes(searchQuery.toLowerCase()) // Filter by searchQuery
-          )
-          .sort((a, b) => {
-            if (selectedOption === "newestFirst") {
-              return new Date(b.createdAt) - new Date(a.createdAt); // Newest first (descending)
-            } else {
-              return new Date(a.createdAt) - new Date(b.createdAt); // Oldest first (ascending)
-            }
-          })
-          .map((entry, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200 cursor-pointer duration-300"
-            >
-              <p className="text-gray-700 text-left">{entry.entry_name}</p>
-              <p className="text-gray-400 text-sm text-left mt-2">
-                {new Date(entry.createdAt).toLocaleString()}
-              </p>
-            </div>
-          ))}
+        {session?.user?.id &&
+          getEntries?.chats
+            ?.filter((chat) => chat.user_id === session.user.id) // Filter by user_id
+            .filter(
+              (entry) =>
+                entry.entry_name
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) // Filter by searchQuery
+            )
+            .sort((a, b) => {
+              if (selectedOption === "newestFirst") {
+                return new Date(b.createdAt) - new Date(a.createdAt); // Newest first (descending)
+              } else {
+                return new Date(a.createdAt) - new Date(b.createdAt); // Oldest first (ascending)
+              }
+            })
+            .map((entry, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200 cursor-pointer duration-300"
+                onClick={() => router.push(`/entry/${entry._id}`)} // Make sure the URL is correct
+              >
+                <p className="text-gray-700 text-left">{entry.entry_name}</p>
+                <p className="text-gray-400 text-sm text-left mt-2">
+                  {new Date(entry.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
 
         {getEntries?.chats?.length === 0 && (
           <p className="text-gray-500 mt-6">No entries found.</p>
