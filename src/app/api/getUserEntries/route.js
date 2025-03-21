@@ -7,7 +7,7 @@ export async function GET() {
     await Connection(); // Ensure database connection
 
     const chats = await Entry.find(); // Fetch chats from DB
-    console.log(chats,"chats ye hain");
+    // console.log(chats,"chats ye hain");
 
     return NextResponse.json({ chats }, { status: 200 }); // Correct response format
   } catch (error) {

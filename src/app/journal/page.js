@@ -193,22 +193,23 @@ export default function Home() {
         </div>
 
         {session?.user?.id &&
-          getEntries?.chats
-            ?.filter((chat) => chat.user_id === session.user.id)
-            .map((entry, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
-              >
-                <p className="text-gray-700 text-left">{entry.entry_name}</p>
-                <p className="text-gray-400 text-sm text-left mt-2">
-                  {new Date(entry.createdAt).toLocaleString()}
-                </p>
-              </div>
-            ))}
+            getEntries?.chats
+              ?.filter((chat) => chat.user_id === session.user.id)
+              .map((entry, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200 cursor-pointer"
+                  onClick={() => router.push(`/entry/${entry._id}`)}
+                >
+                  <p className="text-gray-700 text-left">{entry.entry_name}</p>
+                  <p className="text-gray-400 text-sm text-left mt-2">
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </p>
+                </div>
+              ))}
 
-        {getEntries?.chats?.length === 0 && (
-          <p className="text-gray-500 mt-6">No entries found.</p>
+          {getEntries?.chats?.length === 0 && (
+            <p className="text-gray-500 mt-6">No entries found.</p>
         )}
       </div>
     </div>

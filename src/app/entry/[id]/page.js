@@ -43,11 +43,57 @@ const EntryPage = () => {
     fetchChatHistory();
   }, [chat_id]); // Refetch when chat_id changes
 
+  // Working fine but not updating the entry name 
+  // const handleGoDeeper = async () => {
+  //   if (!message.trim() || !chat_id) return;
+
+  //   const userMessage = { role: "user", content: message };
+
+  //   try {
+  //     // Save user message
+  //     await fetch("/api/chats", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ user_id, chat_id, message, type: "sent" }),
+  //     });
+
+  //     // Get GPT response
+  //     const res = await openai.chat.completions.create({
+  //       model: "gpt-3.5-turbo",
+  //       messages: [...chat, userMessage],
+  //     });
+
+  //     const aiResponse = {
+  //       role: "assistant",
+  //       content: res.choices[0]?.message?.content || "No response from AI",
+  //     };
+
+  //     // Save GPT response
+  //     await fetch("/api/chats", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         user_id,
+  //         chat_id,
+  //         message: aiResponse.content,
+  //         type: "response",
+  //       }),
+  //     });
+
+  //     // Update UI state
+  //     setChat([...chat, userMessage, aiResponse]);
+  //     setMessage(""); // Clear input
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // };
+
+
   const handleGoDeeper = async () => {
     if (!message.trim() || !chat_id) return;
-
+  
     const userMessage = { role: "user", content: message };
-
+  
     try {
       // Save user message
       await fetch("/api/chats", {
@@ -55,18 +101,27 @@ const EntryPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id, chat_id, message, type: "sent" }),
       });
-
+  
+      // If this is the first message, update the chat entry name
+      if (chat.length === 0) {
+        await fetch(`/api/updateEntryName`, {
+          method: "PATCH", // Use PATCH for updates
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id, entry_name: message }),
+        });
+      }
+  
       // Get GPT response
       const res = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [...chat, userMessage],
       });
-
+  
       const aiResponse = {
         role: "assistant",
         content: res.choices[0]?.message?.content || "No response from AI",
       };
-
+  
       // Save GPT response
       await fetch("/api/chats", {
         method: "POST",
@@ -78,7 +133,7 @@ const EntryPage = () => {
           type: "response",
         }),
       });
-
+  
       // Update UI state
       setChat([...chat, userMessage, aiResponse]);
       setMessage(""); // Clear input
@@ -86,6 +141,7 @@ const EntryPage = () => {
       console.error("Error:", error);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800 px-4">
