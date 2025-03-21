@@ -158,14 +158,14 @@ export default function Home() {
             )}
           </div>
           {showProfile && (
-            <div className="absolute top-full w-auto bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg z-50">
+            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg z-50">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
                 <Link href="/profile">
-                  <div className="cursor-pointer w-5/6">
+                  <div className="cursor-pointer w-[90%] overflow-hidden">
                     <p className="text-gray-700 font-normal text-[16px]">
                       {session?.user?.name}
                     </p>
-                    <p className="text-gray-700 font-normal text-[16px] mt-1 overflow-hidden">
+                    <p className="text-gray-700 font-normal text-[16px] mt-1 ">
                       {session?.user?.email}
                     </p>
                   </div>
