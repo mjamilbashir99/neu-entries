@@ -165,7 +165,7 @@ export default function Home() {
                     <p className="text-gray-700 font-normal text-[16px]">
                       {session?.user?.name}
                     </p>
-                    <p className="text-gray-700 font-normal text-[16px] mt-1">
+                    <p className="text-gray-700 font-normal text-[16px] mt-1 overflow-hidden">
                       {session?.user?.email}
                     </p>
                   </div>
