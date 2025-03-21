@@ -141,6 +141,55 @@ const EntryPage = () => {
       console.error("Error:", error);
     }
   };
+
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append("file", file);
+  
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData, // Ensure we're sending form-data
+      });
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to upload");
+  
+      console.log("Uploaded Image Path:", data.imagePath);
+  
+      // Save image path to the chat and show the AI response
+      await fetch("/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          user_id, 
+          chat_id, 
+          message: data.imagePath, 
+          type: "sent" 
+        }),
+      });
+  
+      // Hardcoded AI response
+      await fetch("/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          user_id, 
+          chat_id, 
+          message: "I have seen the image. What is your question regarding this?", 
+          type: "response" 
+        }),
+      });
+  
+      setChat([...chat, { role: "user", content: data.imagePath }, { role: "assistant", content: "I have seen the image. What is your question regarding this?" }]);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
   
 
   return (
@@ -157,13 +206,13 @@ const EntryPage = () => {
       {/* Chat Messages */}
       <div className="w-full max-w-2xl p-4 rounded-lg overflow-y-auto max-h-96">
         {chat.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-4 ${
-              msg.role === "user" ? "text-left" : "text-blue-600 text-left"
-            }`}
-          >
-            <p className="text-lg">{msg.content}</p>
+          <div key={index} className={`mb-4 ${msg.role === "user" ? "text-left" : "text-blue-600 text-left"}`}>
+            {/* Check if the message is an image path */}
+            {msg.content.startsWith("/uploads/") ? (
+              <img src={msg.content} alt="Uploaded" className="max-w-full h-auto rounded-lg shadow-md" width="20%"/>
+            ) : (
+              <p className="text-lg">{msg.content}</p>
+            )}
           </div>
         ))}
       </div>
@@ -189,6 +238,12 @@ const EntryPage = () => {
       {/* Icons */}
       <div className="flex gap-4 mt-4 text-gray-500 text-lg">
         <FaImage className="cursor-pointer" />
+        <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageUpload} 
+            className="mt-4"
+          />
         <FaMicrophone className="cursor-pointer" />
       </div>
     </div>
