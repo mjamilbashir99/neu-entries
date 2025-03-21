@@ -9,6 +9,7 @@ import { MdChevronRight } from "react-icons/md";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IoCloseOutline } from "react-icons/io5";
+import { IoMdCheckmark } from "react-icons/io";
 
 export default function Home() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function Home() {
   const [searchEntries, setsearchEntries] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef(null);
+  const filterRef = useRef(null);
+  const [filter, setfilter] = useState(false);
 
   useEffect(() => {
     const today = new Date();
@@ -102,19 +105,36 @@ export default function Home() {
       entry.entry_name?.toLowerCase().includes(searchQuery.toLowerCase()) // Compare with the state query
   );
 
-  const handleClickOutside = (e) => {
-    if (searchRef.current && !searchRef.current.contains(e.target)) {
-      setsearchEntries(false); // Close the search input
-    }
-  };
-
-  // Use the effect to add event listener for click outside
   useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(e.target) &&
+        searchEntries
+      ) {
+        setsearchEntries(false);
+        setSearchQuery(""); // Search ko reset karega
+      }
+
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(e.target) &&
+        filter
+      ) {
+        setfilter(false); // Filter ko close karega
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [searchEntries, filter]);
+
+  const [selectedOption, setSelectedOption] = useState("newestFirst"); // Default is "Newest First"
+
+  const handleSelect = (option) => {
+    setSelectedOption(option); // Update the selected option when clicked
+  };
 
   return (
     <div className="flex flex-col p-6 bg-[#faf9f5] h-screen pt-20 overflow-hidden">
@@ -138,23 +158,25 @@ export default function Home() {
             )}
           </div>
           {showProfile && (
-            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg overflow-hidden">
+            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg z-50">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
                 <Link href="/profile">
-                  <div className="cursor-pointer">
+                  <div className="cursor-pointer w-[90%] overflow-hidden">
                     <p className="text-gray-700 font-normal text-[16px]">
                       {session?.user?.name}
                     </p>
-                    <p className="text-gray-700 font-normal text-[16px] mt-1">
+                    <p className="text-gray-700 font-normal text-[16px] mt-1 ">
                       {session?.user?.email}
                     </p>
                   </div>
                 </Link>
                 <MdChevronRight size={25} className="text-gray-500" />
               </div>
-              <p className="text-blue-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
-                Need Unlimited Depth Entries?
-              </p>
+              <Link href={"/subscription-screen"}>
+                <p className="text-blue-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
+                  Need Unlimited Depth Entries?
+                </p>
+              </Link>
               <p className="text-gray-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
                 Get Help / Feedback
               </p>
@@ -182,14 +204,14 @@ export default function Home() {
           <div className="relative" ref={searchRef}>
             <IoSearchOutline
               size={25}
-              onClick={() => setsearchEntries(!searchEntries)}
-              className="cursor-pointer"
+              className="cursor-pointer hover:text-black"
+              onClick={() => setsearchEntries(true)} // Always open the search on click
             />
             {searchEntries && (
               <div className="bg-white border border-gray-400 absolute w-44 -right-2 top-3/6 -translate-y-3/6 flex rounded-lg">
                 <div className="relative">
                   <input
-                    type="search"
+                    type="text"
                     value={searchQuery} // Controlled input using state
                     onChange={handleSearch} // Update search query
                     placeholder="Search"
@@ -197,27 +219,67 @@ export default function Home() {
                   />
                   <IoCloseOutline
                     size={20}
-                    className="z-10 absolute top-3/6 -translate-y-3/6 right-1 cursor-pointer"
-                    onClick={() => setsearchEntries(!searchEntries)} // Close search field
+                    className="absolute top-3/6 -translate-y-3/6 right-1 cursor-pointer"
+                    onClick={() => setsearchEntries(false)} // Close search field
                   />
                 </div>
               </div>
             )}
           </div>
-          <div>
-            <CiFilter size={25} />
+
+          <div className="relative" ref={filterRef}>
+            <div>
+              <CiFilter
+                size={25}
+                className="hover:text-black"
+                onClick={() => setfilter(!filter)}
+              />
+            </div>
+            {filter && (
+              <div className="absolute top-full left-3/6 -translate-x-3/6 bg-white border border-gray-300 py-3 px-4 w-auto z-10">
+                <div
+                  className="flex gap-8  cursor-pointer"
+                  onClick={() => handleSelect("newestFirst")}
+                >
+                  <p className="text-[16px] text-nowrap">Newest First</p>
+                  {selectedOption === "newestFirst" && (
+                    <IoMdCheckmark size={20} className="text-green-600" />
+                  )}
+                </div>
+                <div
+                  className="flex gap-8 mt-4 cursor-pointer"
+                  onClick={() => handleSelect("oldestFirst")}
+                >
+                  <p className="text-[16px] text-nowrap">Oldest First</p>
+                  {selectedOption === "oldestFirst" && (
+                    <IoMdCheckmark size={20} className="text-green-600" />
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
         {session?.user?.id &&
           getEntries?.chats
-            ?.filter((chat) => chat.user_id === session.user.id)
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            ?.filter((chat) => chat.user_id === session.user.id) // Filter by user_id
+            .filter(
+              (entry) =>
+                entry.entry_name
+                  ?.toLowerCase()
+                  .includes(searchQuery.toLowerCase()) // Filter by searchQuery
+            )
+            .sort((a, b) => {
+              if (selectedOption === "newestFirst") {
+                return new Date(b.createdAt) - new Date(a.createdAt); // Newest first (descending)
+              } else {
+                return new Date(a.createdAt) - new Date(b.createdAt); // Oldest first (ascending)
+              }
+            })
             .map((entry, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200 cursor-pointer"
-                onClick={() => router.push(`/entry/${entry._id}`)}
+                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200 cursor-pointer duration-300"
+                onClick={() => router.push(`/entry/${entry._id}`)} // Make sure the URL is correct
               >
                 <p className="text-gray-700 text-left">{entry.entry_name}</p>
                 <p className="text-gray-400 text-sm text-left mt-2">
