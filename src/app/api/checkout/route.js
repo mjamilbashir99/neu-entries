@@ -30,8 +30,10 @@ export async function POST(req) {
         },
       ],
       mode: "subscription",
-      success_url: "/success",
-      cancel_url: "/cancel",
+      success_url:
+        "https://neu-entries-git-main-mjamilbashir99s-projects.vercel.app/success",
+      cancel_url:
+        "https://neu-entries-git-main-mjamilbashir99s-projects.vercel.app/cancel",
     });
 
     return Response.json({ id: session.id });
