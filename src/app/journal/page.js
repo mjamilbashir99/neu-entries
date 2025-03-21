@@ -71,7 +71,6 @@ export default function Home() {
 
   const handleNewEntry = async () => {
     const userId = session.user.id;
-    console.log("sufi implementation awesomne developer", userId);
 
     try {
       const response = await fetch("/api/entries", {
