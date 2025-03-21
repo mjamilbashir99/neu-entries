@@ -158,7 +158,7 @@ export default function Home() {
             )}
           </div>
           {showProfile && (
-            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg overflow-hidden">
+            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg overflow-hidden z-50">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
                 <Link href="/profile">
                   <div className="cursor-pointer">
@@ -172,9 +172,11 @@ export default function Home() {
                 </Link>
                 <MdChevronRight size={25} className="text-gray-500" />
               </div>
-              <p className="text-blue-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
-                Need Unlimited Depth Entries?
-              </p>
+              <Link href={"/subscription-screen"}>
+                <p className="text-blue-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
+                  Need Unlimited Depth Entries?
+                </p>
+              </Link>
               <p className="text-gray-700 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer">
                 Get Help / Feedback
               </p>
@@ -233,7 +235,7 @@ export default function Home() {
                 onClick={() => setfilter(!filter)}
               />
             </div>
-            {filter && ( // Assuming `filter` is a state variable or prop that controls whether to show the filter
+            {filter && (
               <div className="absolute top-full left-3/6 -translate-x-3/6 bg-white border border-gray-300 py-3 px-4 w-auto z-10">
                 <div
                   className="flex gap-8  cursor-pointer"
