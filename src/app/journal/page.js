@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { PiPlus } from "react-icons/pi";
 import { IoSearchOutline } from "react-icons/io5";
 import { CiFilter } from "react-icons/ci";
@@ -8,6 +8,7 @@ import Image from "next/image";
 import { MdChevronRight } from "react-icons/md";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IoCloseOutline } from "react-icons/io5";
 
 export default function Home() {
   const router = useRouter();
@@ -15,7 +16,10 @@ export default function Home() {
   const [entries, setEntries] = useState([]);
   const [showProfile, setShowProfile] = useState(false);
   const { data: session } = useSession();
-  const [getEntries, setgetEntries] = useState("");
+  const [getEntries, setgetEntries] = useState([]);
+  const [searchEntries, setsearchEntries] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const today = new Date();
@@ -32,8 +36,6 @@ export default function Home() {
       try {
         const response = await fetch("/api/getUserEntries");
         const data = await response.json();
-
-        // ✅ Ensure users is an array
         setgetEntries(data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -43,34 +45,8 @@ export default function Home() {
     fetchUsers();
   }, []);
 
-  console.log("Users Array:", getEntries);
-
-  // const handleNewEntry = async () => {
-  //   const userId = "67d99dabc6d5d480ed1e720c"; // Replace with actual user ID from auth system
-
-  //   try {
-  //     const response = await fetch("/api/entries", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ user_id: userId }),
-  //     });
-
-  //     if (response.ok) {
-  //       const newEntry = await response.json();
-  //       setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
-  //     } else {
-  //       console.error("Failed to create entry");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error creating entry:", error);
-  //   }
-  // };
-
   const handleNewEntry = async () => {
     const userId = session.user.id;
-    console.log("sufi implementation awesomne developer", userId);
 
     try {
       const response = await fetch("/api/entries", {
@@ -84,8 +60,6 @@ export default function Home() {
       if (response.ok) {
         const newEntry = await response.json();
         setEntries((prevEntries) => [...prevEntries, newEntry]); // Update UI
-
-        // Redirect to new entry page
         router.push(`/entry/${newEntry._id}`);
       } else {
         console.error("Failed to create entry");
@@ -118,13 +92,37 @@ export default function Home() {
     }
   };
 
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value); // Set the search query in the state
+  };
+
+  // Filter entries based on the search query
+  const filteredEntries = getEntries?.chats?.filter(
+    (entry) =>
+      entry.entry_name?.toLowerCase().includes(searchQuery.toLowerCase()) // Compare with the state query
+  );
+
+  const handleClickOutside = (e) => {
+    if (searchRef.current && !searchRef.current.contains(e.target)) {
+      setsearchEntries(false); // Close the search input
+    }
+  };
+
+  // Use the effect to add event listener for click outside
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col p-6 bg-[#faf9f5] h-screen pt-40">
-      <div className="flex justify-between items-center mb-8 w-[55%] mx-auto">
-        <h1 className="text-3xl text-gray-800 font-semibold">{currentDate}</h1>
+    <div className="flex flex-col p-6 bg-[#faf9f5] h-screen pt-20 overflow-hidden">
+      <div className="flex justify-between items-center mb-8 w-[95%] md:w-[80%] lg:w-[45%] mx-auto">
+        <h2 className="text-gray-800 font-medium w-full">{currentDate}</h2>
         <div className="relative" onMouseLeave={() => setShowProfile(false)}>
           <div
-            className="w-10 h-10 rounded-full overflow-hidden relative cursor-pointer"
+            className="w-5 h-5 rounded-full overflow-hidden relative cursor-pointer"
             onMouseEnter={() => setShowProfile(true)}
           >
             {session?.user?.image ? (
@@ -140,7 +138,7 @@ export default function Home() {
             )}
           </div>
           {showProfile && (
-            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg">
+            <div className="absolute top-full w-60 bg-white left-3/6 -translate-x-3/6 shadow-lg shadow-gray-300 rounded-lg overflow-hidden">
               <div className="flex justify-between items-center px-5 py-4 hover:bg-gray-100">
                 <Link href="/profile">
                   <div className="cursor-pointer">
@@ -166,47 +164,68 @@ export default function Home() {
               >
                 Sign Out
               </p>
-              {/* <p
-                className="text-red-600 font-normal text-[17px] px-5 py-3 hover:bg-gray-100 cursor-pointer"
-                onClick={handleDeleteAccount}
-              >
-                Delete Account
-              </p> */}
             </div>
           )}
         </div>
       </div>
 
-      <div className="text-center w-[55%] mx-auto">
+      <div className="text-center w-[95%] md:w-[80%] lg:w-[45%] mx-auto">
         <button
           onClick={handleNewEntry}
-          className="w-full shadow-md shadow-gray-200 bg-white text-gray-400 py-5 px-6 rounded-xl text-xl hover:shadow-lg hover:translate-y-[-5px] duration-200 flex items-center justify-start gap-3"
+          className="w-full shadow-md shadow-gray-200 bg-white text-gray-400 py-4 px-5 rounded-xl text-xl hover:shadow-lg hover:translate-y-[-5px] duration-200 flex items-center justify-start gap-3"
         >
           <PiPlus />
           New Entry
         </button>
 
         <div className="text-gray-500 mx-auto mt-10 mb-4 flex gap-6 justify-end items-center">
-          <IoSearchOutline size={25} />
-          <CiFilter size={25} />
+          <div className="relative" ref={searchRef}>
+            <IoSearchOutline
+              size={25}
+              onClick={() => setsearchEntries(!searchEntries)}
+              className="cursor-pointer"
+            />
+            {searchEntries && (
+              <div className="bg-white border border-gray-400 absolute w-44 -right-2 top-3/6 -translate-y-3/6 flex rounded-lg">
+                <div className="relative">
+                  <input
+                    type="search"
+                    value={searchQuery} // Controlled input using state
+                    onChange={handleSearch} // Update search query
+                    placeholder="Search"
+                    className="w-full h-8 border-none focus:ring-none focus:shadow-none focus:outline-none px-2"
+                  />
+                  <IoCloseOutline
+                    size={20}
+                    className="z-10 absolute top-3/6 -translate-y-3/6 right-1 cursor-pointer"
+                    onClick={() => setsearchEntries(!searchEntries)} // Close search field
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div>
+            <CiFilter size={25} />
+          </div>
         </div>
 
         {session?.user?.id &&
-          getEntries?.chats
-            ?.filter((chat) => chat.user_id === session.user.id)
-            .map((entry, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
-              >
-                <p className="text-gray-700 text-left">{entry.entry_name}</p>
-                <p className="text-gray-400 text-sm text-left mt-2">
-                  {new Date(entry.createdAt).toLocaleString()}
-                </p>
-              </div>
-            ))}
+          filteredEntries?.length > 0 &&
+          filteredEntries?.map((entry, index) => (
+            <div
+              key={index}
+              className="bg-white p-6 rounded-xl shadow-md mb-4 hover:shadow-lg hover:translate-y-[-5px] duration-200"
+            >
+              <p className="text-gray-700 text-left text-[14px]">
+                {entry.entry_name}
+              </p>
+              <p className="text-gray-400 text-sm text-left mt-2 text-[14px]">
+                {new Date(entry.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))}
 
-        {getEntries?.chats?.length === 0 && (
+        {filteredEntries?.length === 0 && (
           <p className="text-gray-500 mt-6">No entries found.</p>
         )}
       </div>
