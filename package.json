@@ -24,6 +24,7 @@
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.0",
     "openai": "^4.88.0",
+    "raw-body": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
