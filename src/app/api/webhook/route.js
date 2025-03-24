@@ -1,8 +1,3 @@
-// import { NextResponse } from "next/server";
-// import Stripe from "stripe";
-// import Connection from "../../../app/dbconfig/dbconfig"; // Apni DB connection file import karein
-// import User from "../../../../model/UserModel"; // Apna user model import karein
-
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -20,12 +15,12 @@ export async function POST(req) {
   let rawBody;
 
   try {
-    // Get the raw body to ensure signature verification works
+    // Read the raw text body instead of JSON parsing
     rawBody = await req.text();
 
     // Verify the webhook signature
     event = stripe.webhooks.constructEvent(
-      rawBody, // Raw text body
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
