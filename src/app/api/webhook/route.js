@@ -15,8 +15,10 @@ export async function POST(req) {
   let rawBody;
 
   try {
+    console.log("inside try");
     // Read the raw text body instead of JSON parsing
     rawBody = await req.text();
+    console.log(rawBody);
 
     // Verify the webhook signature
     event = stripe.webhooks.constructEvent(
@@ -24,6 +26,7 @@ export async function POST(req) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log(event);
   } catch (err) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return NextResponse.json({ error: "Webhook Error" }, { status: 400 });
