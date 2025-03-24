@@ -1,7 +1,4 @@
-// import { NextResponse } from "next/server";
-// import Stripe from "stripe";
-// import Connection from "../../../app/dbconfig/dbconfig"; // Apni DB connection file import karein
-// import User from "../../../../model/UserModel"; // Apna user model import karein
+
 
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -9,22 +6,11 @@ import Connection from "../../../app/dbconfig/dbconfig";
 import User from "../../../../model/UserModel";
 import { buffer } from "micro";
 
-// import { NextResponse } from "next/server";
-// import Stripe from "stripe";
-// import { connectToDatabase } from "@/lib/mongodb";
-// import User from "@/models/User";
-
-// import { NextResponse } from "next/server";
-// import Stripe from "stripe";
-
-// import { connectToDatabase } from "@/lib/mongodb";
-// import User from "@/models/User";
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-03-14" });
 
 export const config = {
   api: {
-    bodyParser: false, // Disable body parsing so we can use raw body
+    bodyParser: false,
   },
 };
 
@@ -37,17 +23,14 @@ export async function POST(req) {
 
   let event;
   try {
-    // Read raw body as Buffer
     const rawBody = await buffer(req.body);
 
-    // Verify Stripe Signature
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error("Webhook signature verification failed.", err.message);
+    console.error("Webhook signaturexxxx verification failed.", err.message);
     return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
   }
 
-  // Handle successful checkout
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const customerEmail = session.customer_email;
