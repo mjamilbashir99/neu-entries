@@ -33,14 +33,14 @@ const Profile = () => {
   
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-lg p-6 bg-white shadow-md rounded-lg">
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="w-full max-w-xl p-6 rounded-lg">
         {/* Profile Picture */}
-        <div className="flex flex-col items-center">
+        <div className="mt-20 flex flex-col ">
           <div className="w-16 h-16 bg-orange-500 text-white flex items-center justify-center rounded-full text-xl font-bold">
             {session?.user?.name?.charAt(0).toUpperCase() || "T"}
           </div>
-          <h2 className="text-2xl font-semibold mt-2">Personal details</h2>
+          <h2 className="text-2xl font-semibold mt-8">Personal details</h2>
         </div>
 
         {/* Personal Details */}
@@ -55,13 +55,15 @@ const Profile = () => {
         {/* Subscription Section */}
         <div className="mt-6 border-t pt-4">
           <h2 className="text-xl font-semibold">Your Subscription</h2>
-          <p className="text-gray-600 text-sm">
-            Manage your subscription or upgrade to premium.
-          </p>
-          <a href="/subscription-screen" className="text-blue-600 hover:underline mt-2 inline-block">
-            Upgrade to premium
-          </a>
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <p>Manage your subscription or upgrade to premium.</p>
+            <a href="/subscription-screen" className="text-blue-600 hover:underline flex items-center">
+              Upgrade to premium 
+            </a>
+          </div>
         </div>
+
+
 
         {/* Help & Support */}
         <div className="mt-6 border-t pt-4">
