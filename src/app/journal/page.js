@@ -137,7 +137,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col p-6 bg-[#faf9f5] h-screen pt-20 overflow-hidden">
+    <div className="flex flex-col p-6 bg-[#faf9f5] h-screen pt-20 overflow-scroll">
       <div className="flex justify-between items-center mb-8 w-[95%] md:w-[80%] lg:w-[45%] mx-auto">
         <h2 className="text-gray-800 font-medium w-full">{currentDate}</h2>
         <div className="relative" onMouseLeave={() => setShowProfile(false)}>

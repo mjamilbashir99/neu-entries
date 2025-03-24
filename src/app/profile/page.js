@@ -30,7 +30,27 @@ const Profile = () => {
         }
       }
     };
-  
+
+
+    const handleExportEntries = async () => {
+      try {
+        const response = await fetch("/api/export-entries");
+        if (!response.ok) throw new Error("Failed to export entries");
+    
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "entries.docx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (error) {
+        console.error("Export error:", error);
+        alert("Failed to export entries. Please try again.");
+      }
+    };
+    
 
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -95,7 +115,10 @@ const Profile = () => {
             <p className="text-gray-600 text-sm">
               Download all your journal entries as a document
             </p>
-            <a href="#" className="text-blue-600 hover:underline mt-1 inline-block">
+            <a
+              className="text-blue-600 hover:underline mt-1 inline-block cursor-pointer"
+              onClick={handleExportEntries}
+            >
               Export entries
             </a>
           </div>
