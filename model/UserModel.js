@@ -29,6 +29,8 @@ const UserSchema = new mongoose.Schema(
     googleId: { type: String, unique: true },
     accessToken: { type: String },
     refreshToken: { type: String },
+    stripeCustomerId: String,
+    paid_for_subscription: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
