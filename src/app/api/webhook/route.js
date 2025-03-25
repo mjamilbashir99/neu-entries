@@ -18,6 +18,7 @@ export default async function handler(req, res) {
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
+  console.log("✅ Webhook function called!");
 
   try {
     // ✅ Read the raw body as a buffer
