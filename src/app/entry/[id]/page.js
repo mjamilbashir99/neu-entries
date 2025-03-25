@@ -5,6 +5,8 @@ import { FaMicrophone, FaImage } from "react-icons/fa";
 import OpenAI from "openai";
 import { useSession } from "next-auth/react";
 import { useRef } from "react";
+import { IoIosArrowRoundBack } from "react-icons/io";
+import Link from "next/link";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -207,6 +209,10 @@ const EntryPage = () => {
   return (
     <div className="flex flex-col items-center mt-10  min-h-screen bg-white text-gray-800 px-4">
       {/* Date */}
+      <Link href={"/journal"}>
+        <IoIosArrowRoundBack className="absolute left-4 top-4 text-gray-400 text-2xl" />
+      </Link>
+
       <p className="text-gray-500 mb-4">
         {new Date().toLocaleDateString("en-US", {
           month: "long",
