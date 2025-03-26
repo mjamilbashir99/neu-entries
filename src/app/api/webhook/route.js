@@ -19,7 +19,6 @@ export default async function handler(req, res) {
 
   let event;
   console.log("✅ Webhook function called!");
-
   try {
     // ✅ Read the raw body as a buffer
     const rawBody = await buffer(req);

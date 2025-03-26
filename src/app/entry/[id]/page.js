@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation"; // Use next/navigation instead of next/router
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
 import { FaMicrophone, FaImage } from "react-icons/fa";
 import OpenAI from "openai";
 import { useSession } from "next-auth/react";
-import { useRef } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import Link from "next/link";
 
@@ -15,17 +14,17 @@ const openai = new OpenAI({
 
 const EntryPage = () => {
   const fileInputRef = useRef(null);
-  const { id: chat_id } = useParams(); // Extract chat_id dynamically from URL
+  const { id: chat_id } = useParams();
   const { data: session } = useSession();
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadedImagePath, setUploadedImagePath] = useState(null);
+
   const user_id = session?.user?.id;
 
-  console.log("User ID:", user_id);
-  console.log("Chat ID from URL:", chat_id);
-
   useEffect(() => {
-    if (!chat_id) return; // Ensure chat_id is available before fetching data
+    if (!chat_id) return;
 
     const fetchChatHistory = async () => {
       try {
@@ -45,87 +44,73 @@ const EntryPage = () => {
     };
 
     fetchChatHistory();
-  }, [chat_id]); // Refetch when chat_id changes
-
-  // Working fine but not updating the entry name
-  // const handleGoDeeper = async () => {
-  //   if (!message.trim() || !chat_id) return;
-
-  //   const userMessage = { role: "user", content: message };
-
-  //   try {
-  //     // Save user message
-  //     await fetch("/api/chats", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ user_id, chat_id, message, type: "sent" }),
-  //     });
-
-  //     // Get GPT response
-  //     const res = await openai.chat.completions.create({
-  //       model: "gpt-3.5-turbo",
-  //       messages: [...chat, userMessage],
-  //     });
-
-  //     const aiResponse = {
-  //       role: "assistant",
-  //       content: res.choices[0]?.message?.content || "No response from AI",
-  //     };
-
-  //     // Save GPT response
-  //     await fetch("/api/chats", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         user_id,
-  //         chat_id,
-  //         message: aiResponse.content,
-  //         type: "response",
-  //       }),
-  //     });
-
-  //     // Update UI state
-  //     setChat([...chat, userMessage, aiResponse]);
-  //     setMessage(""); // Clear input
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
+  }, [chat_id]);
 
   const handleGoDeeper = async () => {
-    if (!message.trim() || !chat_id) return;
-
-    const userMessage = { role: "user", content: message };
-
+    if (!message.trim() && !uploadedImagePath) return;
+    if (!chat_id) return;
+  
+    const systemPrompt = {
+      role: "system",
+      content: `You are a Journaling Assistant designed to help users explore their thoughts and emotions through reflective prompts. 
+      Your goal is to encourage deeper self-exploration while maintaining a supportive, non-judgmental tone. 
+  
+      Response Guidelines:
+      1. Keep responses concise—prompt further reflection instead of providing long explanations.
+      2. Ask open-ended questions to encourage users to expand on their thoughts.
+      3. Adapt to the depth of the user’s entry:
+         - For brief responses, start with "What" questions to gather more context.
+         - For detailed or emotional responses, use "How" or "Why" questions to encourage deeper reflection.
+      4. Maintain a calm and non-judgmental tone, ensuring users feel safe expressing themselves.
+      5. If an image is provided, acknowledge it and, when appropriate, ask how it relates to their thoughts or emotions.
+      
+      Example Interaction:
+      User: "I had a stressful day."
+      Assistant: "What was the most challenging part of your day?"
+  
+      User: "I felt like I wasn't being heard in my meeting."
+      Assistant: "Why do you think that experience impacted you so strongly?"`
+    };
+  
+    const userMessages = [];
+    if (uploadedImagePath) {
+      userMessages.push({ role: "user", content: uploadedImagePath });
+    }
+    if (message.trim()) {
+      userMessages.push({ role: "user", content: message });
+    }
+  
     try {
-      // Save user message
-      await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id, chat_id, message, type: "sent" }),
-      });
-
-      // If this is the first message, update the chat entry name
+      for (const msg of userMessages) {
+        await fetch("/api/chats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id, chat_id, message: msg.content, type: "sent" }),
+        });
+      }
+  
       if (chat.length === 0) {
         await fetch(`/api/updateEntryName`, {
-          method: "PATCH", // Use PATCH for updates
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ chat_id, entry_name: message }),
         });
       }
-
-      // Get GPT response
+  
       const res = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [...chat, userMessage],
+        model: "gpt-4-turbo",
+        messages: [systemPrompt, ...chat, ...userMessages],
+        temperature: 0.1,
+        max_tokens: 100,
+        // presence_penalty: 0.6, // Reduce repetition
+        // frequency_penalty: 0.4, // Ensure unique phrasing
       });
-
+  
       const aiResponse = {
         role: "assistant",
         content: res.choices[0]?.message?.content || "No response from AI",
       };
-
-      // Save GPT response
+  
       await fetch("/api/chats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,14 +121,16 @@ const EntryPage = () => {
           type: "response",
         }),
       });
-
-      // Update UI state
-      setChat([...chat, userMessage, aiResponse]);
-      setMessage(""); // Clear input
+  
+      setChat([...chat, ...userMessages, aiResponse]);
+      setMessage("");
+      setImagePreview(null);
+      setUploadedImagePath(null);
     } catch (error) {
       console.error("Error:", error);
     }
   };
+  
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -155,60 +142,52 @@ const EntryPage = () => {
     try {
       const res = await fetch("/api/upload", {
         method: "POST",
-        body: formData, // Ensure we're sending form-data
+        body: formData,
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to upload");
 
       console.log("Uploaded Image Path:", data.imagePath);
-
-      // Save image path to the chat and show the AI response
-      await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id,
-          chat_id,
-          message: data.imagePath,
-          type: "sent",
-        }),
-      });
-
-      // Hardcoded AI response
-      await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id,
-          chat_id,
-          message:
-            "I have seen the image. What is your question regarding this?",
-          type: "response",
-        }),
-      });
-
-      setChat([
-        ...chat,
-        { role: "user", content: data.imagePath },
-        {
-          role: "assistant",
-          content:
-            "I have seen the image. What is your question regarding this?",
-        },
-      ]);
+      setUploadedImagePath(data.imagePath);
+      setImagePreview(URL.createObjectURL(file));
     } catch (error) {
       console.error("Error uploading image:", error);
     }
   };
+
   const handleImageClick = () => {
-    // Trigger the file input click event when the image icon is clicked
     fileInputRef.current.click();
   };
 
+
+
+
+
+
+  const handleDragStart = (e, index) => {
+    e.dataTransfer.setData("text/plain", index);
+  };
+  
+  const handleDragOver = (e) => {
+    e.preventDefault(); // Necessary to allow dropping
+  };
+  
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    const draggedIndex = e.dataTransfer.getData("text/plain");
+  
+    if (draggedIndex !== dropIndex) {
+      const newChat = [...chat];
+      const draggedItem = newChat.splice(draggedIndex, 1)[0]; // Remove dragged item
+      newChat.splice(dropIndex, 0, draggedItem); // Insert it at the new position
+      setChat(newChat);
+    }
+  };
+  
+
   return (
-    <div className="flex flex-col items-center mt-10  min-h-screen bg-white text-gray-800 px-4">
-      {/* Date */}
+    <div className="flex flex-col items-center mt-10 min-h-screen bg-white text-gray-800 px-4">
       <Link href={"/journal"}>
         <IoIosArrowRoundBack className="absolute left-4 top-4 text-gray-400 text-2xl" />
       </Link>
@@ -221,59 +200,60 @@ const EntryPage = () => {
         })}
       </p>
 
-      {/* Chat Messages */}
       <div className="w-full max-w-2xl p-4 rounded-lg overflow-y-auto max-h-96">
-        {chat.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-4 ${
-              msg.role === "user" ? "text-left" : "text-blue-600 text-left"
-            }`}
-          >
-            {/* Check if the message is an image path */}
-            {msg.content.startsWith("/uploads/") ? (
-              <img
-                src={msg.content}
-                alt="Uploaded"
-                className="max-w-full h-auto rounded-lg shadow-md"
-                width="20%"
-              />
-            ) : (
-              <p className="text-lg">{msg.content}</p>
-            )}
+  {chat.map((msg, index) => (
+    <div
+      key={index}
+      className={`mb-4 ${
+        msg.role === "user" ? "text-left" : "text-blue-600 text-left"
+      }`}
+      draggable={msg.content.startsWith("/uploads/")} // Enable dragging only for images
+      onDragStart={(e) => handleDragStart(e, index)}
+      onDragOver={handleDragOver}
+      onDrop={(e) => handleDrop(e, index)}
+    >
+      {msg.content.startsWith("/uploads/") ? (
+        <img
+          src={msg.content}
+          alt="Uploaded"
+          className="max-w-full h-auto rounded-lg shadow-md"
+          width="20%"
+        />
+      ) : (
+        <p className="text-lg">{msg.content}</p>
+      )}
+    </div>
+  ))}
+</div>
+
+
+      <div className="w-full max-w-2xl border-b-2 border-gray-300 outline-none text-lg p-2 mt-4 flex items-center relative">
+        {imagePreview && (
+          <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
+            <img src={imagePreview} alt="Preview" className="w-15 h-12 rounded-lg shadow-md mr-2" />
           </div>
-        ))}
+        )}
+        <input
+          type="text"
+          placeholder="Describe your image or write something..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full pl-16 outline-none"
+        />
       </div>
 
-      {/* Input Field */}
-      <input
-        type="text"
-        placeholder="What's on your mind?"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        className="w-full max-w-2xl border-b-2 border-gray-300 outline-none text-lg p-2 mt-4 text-center"
-      />
-
-      {/* Button */}
       <div className="flex justify-center gap-4 md:gap-0 md:justify-between md:w-[55%] mt-5 flex-col-reverse md:flex-row">
         <button
           onClick={handleGoDeeper}
-          className="bg-gray-900 mt-5 text-white px-6 py-3  rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-700 transition duration-200"
-          disabled={!chat_id} // Disable button if chat_id is not available
+          className="bg-gray-900 mt-5 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-700 transition duration-200"
+          disabled={!chat_id}
         >
           Go Deeper <span className="text-gray-300 text-sm">(⌘ + ↵)</span>
         </button>
 
-        {/* Icons */}
         <div className="flex gap-4 mt-4 text-gray-500 text-lg justify-center">
           <FaImage className="cursor-pointer" onClick={handleImageClick} />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="mt-4 hidden" // Hide the default file input element
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
           <FaMicrophone className="cursor-pointer" />
         </div>
       </div>
