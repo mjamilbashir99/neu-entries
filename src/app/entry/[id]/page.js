@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import { useSession } from "next-auth/react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -21,6 +22,7 @@ const EntryPage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadedImagePath, setUploadedImagePath] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const user_id = session?.user?.id;
 
@@ -47,11 +49,25 @@ const EntryPage = () => {
     fetchChatHistory();
   }, [chat_id]);
 
+  const fetchResponseCount = async () => {
+    const res = await fetch(`/api/chats/count?chat_id=${chat_id}`);
+    const data = await res.json();
+    console.log("Response Count:", data.count);
+  };
+
   const handleGoDeeper = async () => {
     if (!message.trim() && !uploadedImagePath) return;
     if (!chat_id) return;
 
     setLoading(true); // Set loading to true
+
+    const res = await fetch(`/api/chats/count?chat_id=${chat_id}`);
+    const { count } = await res.json();
+
+    if (count >= 5) {
+      router.push("/subscription-screen");
+      return;
+    }
 
     const systemPrompt = {
       role: "system",
