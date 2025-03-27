@@ -23,8 +23,64 @@ const EntryPage = () => {
   const [uploadedImagePath, setUploadedImagePath] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const debounceTimer = useRef(null);
+
+  const [isFirstMessage, setIsFirstMessage] = useState(false);
 
   const user_id = session?.user?.id;
+
+  useEffect(() => {
+    if (!chat_id) return;
+
+    // Load message specific to this chat_id from localStorage
+    const savedMessage = localStorage.getItem(`message_${chat_id}`);
+    if (savedMessage) {
+      setMessage(savedMessage);
+    }
+
+    // Check if chat has history
+    const checkChatHistory = async () => {
+      try {
+        const res = await fetch(`/api/chats?chat_id=${chat_id}`);
+        const data = await res.json();
+        if (res.ok && data.length === 0) {
+          setIsFirstMessage(true); // No chat history, it's the first message
+        }
+      } catch (error) {
+        console.error("Error checking chat history:", error);
+      }
+    };
+
+    checkChatHistory();
+  }, [chat_id]);
+
+  const handleInputChange = (e) => {
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+
+    // Store message specific to this chat_id
+    localStorage.setItem(`message_${chat_id}`, newMessage);
+
+    // If it's the first message and chat has no history, update entry name (debounced)
+    if (isFirstMessage && newMessage.trim().length > 0) {
+      clearTimeout(debounceTimer.current);
+
+      debounceTimer.current = setTimeout(async () => {
+        try {
+          await fetch(`/api/updateEntryName`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id, entry_name: newMessage }),
+          });
+
+          setIsFirstMessage(false); // Prevent multiple updates
+        } catch (error) {
+          console.error("Error updating entry name:", error);
+        }
+      }, 1000); // Delay API call by 1000ms
+    }
+  };
+
 
   useEffect(() => {
     if (!chat_id) return;
@@ -246,13 +302,13 @@ const EntryPage = () => {
             />
           </div>
         )}
-        <input
-          type="text"
-          placeholder="Describe your image or write something..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="w-full pl-16 outline-none"
-        />
+         <input
+            type="text"
+            placeholder="Describe your image or write something..."
+            value={message}
+            onChange={handleInputChange}
+            className="w-full pl-16 outline-none"
+          />
       </div>
 
       <div className="flex justify-center gap-4 md:gap-0 md:justify-between md:w-[55%] mt-5 flex-col-reverse md:flex-row">
