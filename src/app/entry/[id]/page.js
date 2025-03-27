@@ -20,6 +20,7 @@ const EntryPage = () => {
   const [chat, setChat] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadedImagePath, setUploadedImagePath] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const user_id = session?.user?.id;
 
@@ -49,29 +50,24 @@ const EntryPage = () => {
   const handleGoDeeper = async () => {
     if (!message.trim() && !uploadedImagePath) return;
     if (!chat_id) return;
-  
+
+    setLoading(true); // Set loading to true
+
     const systemPrompt = {
       role: "system",
       content: `You are a Journaling Assistant designed to help users explore their thoughts and emotions through reflective prompts. 
-      Your goal is to encourage deeper self-exploration while maintaining a supportive, non-judgmental tone. 
-  
-      Response Guidelines:
-      1. Keep responses concise—prompt further reflection instead of providing long explanations.
-      2. Ask open-ended questions to encourage users to expand on their thoughts.
-      3. Adapt to the depth of the user’s entry:
-         - For brief responses, start with "What" questions to gather more context.
-         - For detailed or emotional responses, use "How" or "Why" questions to encourage deeper reflection.
-      4. Maintain a calm and non-judgmental tone, ensuring users feel safe expressing themselves.
-      5. If an image is provided, acknowledge it and, when appropriate, ask how it relates to their thoughts or emotions.
-      
-      Example Interaction:
-      User: "I had a stressful day."
-      Assistant: "What was the most challenging part of your day?"
-  
-      User: "I felt like I wasn't being heard in my meeting."
-      Assistant: "Why do you think that experience impacted you so strongly?"`
+    Your goal is to encourage deeper self-exploration while maintaining a supportive, non-judgmental tone. 
+
+    Response Guidelines:
+    1. Keep responses concise—prompt further reflection instead of providing long explanations.
+    2. Ask open-ended questions to encourage users to expand on their thoughts.
+    3. Adapt to the depth of the user’s entry:
+       - For brief responses, start with "What" questions to gather more context.
+       - For detailed or emotional responses, use "How" or "Why" questions to encourage deeper reflection.
+    4. Maintain a calm and non-judgmental tone, ensuring users feel safe expressing themselves.
+    5. If an image is provided, acknowledge it and, when appropriate, ask how it relates to their thoughts or emotions.`,
     };
-  
+
     const userMessages = [];
     if (uploadedImagePath) {
       userMessages.push({ role: "user", content: uploadedImagePath });
@@ -79,16 +75,21 @@ const EntryPage = () => {
     if (message.trim()) {
       userMessages.push({ role: "user", content: message });
     }
-  
+
     try {
       for (const msg of userMessages) {
         await fetch("/api/chats", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id, chat_id, message: msg.content, type: "sent" }),
+          body: JSON.stringify({
+            user_id,
+            chat_id,
+            message: msg.content,
+            type: "sent",
+          }),
         });
       }
-  
+
       if (chat.length === 0) {
         await fetch(`/api/updateEntryName`, {
           method: "PATCH",
@@ -96,21 +97,19 @@ const EntryPage = () => {
           body: JSON.stringify({ chat_id, entry_name: message }),
         });
       }
-  
+
       const res = await openai.chat.completions.create({
         model: "gpt-4-turbo",
         messages: [systemPrompt, ...chat, ...userMessages],
         temperature: 0.1,
         max_tokens: 100,
-        // presence_penalty: 0.6, // Reduce repetition
-        // frequency_penalty: 0.4, // Ensure unique phrasing
       });
-  
+
       const aiResponse = {
         role: "assistant",
         content: res.choices[0]?.message?.content || "No response from AI",
       };
-  
+
       await fetch("/api/chats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,16 +120,17 @@ const EntryPage = () => {
           type: "response",
         }),
       });
-  
+
       setChat([...chat, ...userMessages, aiResponse]);
       setMessage("");
       setImagePreview(null);
       setUploadedImagePath(null);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setLoading(false); // Set loading to false after the response is received
     }
   };
-  
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -160,23 +160,18 @@ const EntryPage = () => {
     fileInputRef.current.click();
   };
 
-
-
-
-
-
   const handleDragStart = (e, index) => {
     e.dataTransfer.setData("text/plain", index);
   };
-  
+
   const handleDragOver = (e) => {
     e.preventDefault(); // Necessary to allow dropping
   };
-  
+
   const handleDrop = (e, dropIndex) => {
     e.preventDefault();
     const draggedIndex = e.dataTransfer.getData("text/plain");
-  
+
     if (draggedIndex !== dropIndex) {
       const newChat = [...chat];
       const draggedItem = newChat.splice(draggedIndex, 1)[0]; // Remove dragged item
@@ -184,7 +179,6 @@ const EntryPage = () => {
       setChat(newChat);
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center mt-10 min-h-screen bg-white text-gray-800 px-4">
@@ -201,36 +195,39 @@ const EntryPage = () => {
       </p>
 
       <div className="w-full max-w-2xl p-4 rounded-lg overflow-y-auto max-h-96">
-  {chat.map((msg, index) => (
-    <div
-      key={index}
-      className={`mb-4 ${
-        msg.role === "user" ? "text-left" : "text-blue-600 text-left"
-      }`}
-      draggable={msg.content.startsWith("/uploads/")} // Enable dragging only for images
-      onDragStart={(e) => handleDragStart(e, index)}
-      onDragOver={handleDragOver}
-      onDrop={(e) => handleDrop(e, index)}
-    >
-      {msg.content.startsWith("/uploads/") ? (
-        <img
-          src={msg.content}
-          alt="Uploaded"
-          className="max-w-full h-auto rounded-lg shadow-md"
-          width="20%"
-        />
-      ) : (
-        <p className="text-lg">{msg.content}</p>
-      )}
-    </div>
-  ))}
-</div>
-
+        {chat.map((msg, index) => (
+          <div
+            key={index}
+            className={`mb-4 ${
+              msg.role === "user" ? "text-left" : "text-blue-600 text-left"
+            }`}
+            draggable={msg.content.startsWith("/uploads/")} // Enable dragging only for images
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, index)}
+          >
+            {msg.content.startsWith("/uploads/") ? (
+              <img
+                src={msg.content}
+                alt="Uploaded"
+                className="max-w-full h-auto rounded-lg shadow-md"
+                width="20%"
+              />
+            ) : (
+              <p className="text-lg">{msg.content}</p>
+            )}
+          </div>
+        ))}
+      </div>
 
       <div className="w-full max-w-2xl border-b-2 border-gray-300 outline-none text-lg p-2 mt-4 flex items-center relative">
         {imagePreview && (
           <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
-            <img src={imagePreview} alt="Preview" className="w-15 h-12 rounded-lg shadow-md mr-2" />
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-15 h-12 rounded-lg shadow-md mr-2"
+            />
           </div>
         )}
         <input
@@ -245,15 +242,28 @@ const EntryPage = () => {
       <div className="flex justify-center gap-4 md:gap-0 md:justify-between md:w-[55%] mt-5 flex-col-reverse md:flex-row">
         <button
           onClick={handleGoDeeper}
-          className="bg-gray-900 mt-5 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-700 transition duration-200"
-          disabled={!chat_id}
+          className={`bg-gray-900 mt-5 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg hover:bg-gray-700 transition duration-200 ${
+            loading ? "cursor-wait" : ""
+          }`}
+          disabled={loading || !chat_id} // Disable the button when loading
         >
-          Go Deeper <span className="text-gray-300 text-sm">(⌘ + ↵)</span>
+          {loading ? (
+            <div className="w-5 h-5 border-4 border-t-transparent border-gray-300 rounded-full animate-spin"></div> // Tailwind spinner
+          ) : (
+            "Go Deeper"
+          )}
+          <span className="text-gray-300 text-sm">(⌘ + ↵)</span>
         </button>
 
         <div className="flex gap-4 mt-4 text-gray-500 text-lg justify-center">
           <FaImage className="cursor-pointer" onClick={handleImageClick} />
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
           <FaMicrophone className="cursor-pointer" />
         </div>
       </div>
