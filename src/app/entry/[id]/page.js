@@ -7,6 +7,12 @@ import { useSession } from "next-auth/react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { SlRefresh } from "react-icons/sl";
+import { PiThumbsUp } from "react-icons/pi";
+import { PiThumbsDown } from "react-icons/pi";
+import { IoMdClose } from "react-icons/io";
+import LikeModalWrapper from "@/app/component/LikeModalWrapper";
+import LikeModal from "../../component/LikeModal";
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -26,6 +32,7 @@ const EntryPage = () => {
   const debounceTimer = useRef(null);
 
   const [isFirstMessage, setIsFirstMessage] = useState(false);
+  const [likemodal, setlikemodal] = useState(false);
 
   const user_id = session?.user?.id;
 
@@ -80,7 +87,6 @@ const EntryPage = () => {
       }, 1000); // Delay API call by 1000ms
     }
   };
-
 
   useEffect(() => {
     if (!chat_id) return;
@@ -286,12 +292,26 @@ const EntryPage = () => {
                 width="20%"
               />
             ) : (
-              <p className="text-lg">{msg.content}</p>
+              <div>
+                <p className="text-lg">{msg.content}</p>
+                <div className="flex text-gray-700 gap-2 justify-end">
+                  <PiThumbsUp onClick={() => setlikemodal(true)} />
+                  <PiThumbsDown />
+                  <SlRefresh />
+                  <IoMdClose className="text-red-300" />
+                </div>
+              </div>
             )}
           </div>
         ))}
       </div>
-
+      <div>
+        {likemodal && (
+          <LikeModalWrapper setlikemodal={setlikemodal}>
+            <LikeModal setlikemodal={setlikemodal} />
+          </LikeModalWrapper>
+        )}
+      </div>
       <div className="w-full max-w-2xl border-b-2 border-gray-300 outline-none text-lg p-2 mt-4 flex items-center relative">
         {imagePreview && (
           <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
@@ -302,13 +322,13 @@ const EntryPage = () => {
             />
           </div>
         )}
-         <input
-            type="text"
-            placeholder="Describe your image or write something..."
-            value={message}
-            onChange={handleInputChange}
-            className="w-full pl-16 outline-none"
-          />
+        <input
+          type="text"
+          placeholder="Describe your image or write something..."
+          value={message}
+          onChange={handleInputChange}
+          className="w-full pl-16 outline-none"
+        />
       </div>
 
       <div className="flex justify-center gap-4 md:gap-0 md:justify-between md:w-[55%] mt-5 flex-col-reverse md:flex-row">
