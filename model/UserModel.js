@@ -26,12 +26,13 @@ const UserSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     image: { type: String },
-    googleId: { type: String, unique: true },
+    googleId: { type: String},
     accessToken: { type: String },
     refreshToken: { type: String },
     paid_for_subscription: { type: Number, default: 0 },
     subscriptionId: { type: String },
     subscriptionStatus: { type: String, default: "inactive" },
+    token: { type: String, default: null },
   },
   { timestamps: true }
 );
